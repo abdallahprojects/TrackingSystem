@@ -6,8 +6,8 @@
  */ 
 
 
-#ifndef SWUART_H_
-#define SWUART_H_
+#ifndef SWuart_H_
+#define SWuart_H_
 // Configuration settings
 #define TXDDR  DDRD
 #define TXPORT PORTD
@@ -44,25 +44,25 @@
 
 // new types
 typedef enum Status_E{
-	UART_Rx_No_Data,
-	UART_Rx_OK,
-	UART_Rx_OK_Again,
-	UART_Rx_OverFlow,
-	UART_Tx_Ok,
-	UART_Tx_BufferFull,
-	UART_TX_Buffered,
-	UART_MEM_ERR
+	SWuart_Rx_No_Data,
+	SWuart_Rx_OK,
+	SWuart_Rx_OK_Again,
+	SWuart_Rx_OverFlow,
+	SWuart_Tx_Ok,
+	SWuart_Tx_BufferFull,
+	SWuart_TX_Buffered,
+	SWuart_MEM_ERR
 	}Status_T;
 
-typedef enum uart_state_E{
-	uart_transmitting,
-	uart_trans_in_byte,
-	uart_idle
-}uart_state_T;
+typedef enum SWuart_state_E{
+	SWuart_transmitting,
+	SWuart_trans_in_byte,
+	SWuart_idle
+}SWuart_state_T;
 // function prototypes
-void INIT_uart(uint16_t BaudRate);
-Status_T Tx_UART(uint8_t byte);
-Status_T Rx_UART(uint8_t *byte);
-Status_T Tx_UART_Str(char *byte);
+void Init_SWuart(uint16_t BaudRate);
+Status_T Tx_SWuart(uint8_t byte);
+Status_T Rx_SWuart(uint8_t *byte);
+Status_T Tx_SWuart_Str(char *byte);
 
-#endif /* SWUART_H_ */
+#endif /* SWuart_H_ */

@@ -15,8 +15,8 @@ static volatile uint8_t RxBuffer[RxBUFF_SIZE+1];
 static volatile uint8_t TxBuffer[TX_BUFF_SIZE+1];
 static volatile uint8_t TxBufferPointer,TxByte;
 static volatile uint8_t bit = 10;
-static volatile uart_state_T state= uart_idle;
-void INIT_uart(uint16_t BaudRate)
+static volatile SWuart_state_T state= SWuart_idle;
+void Init_SWuart(uint16_t BaudRate)
 {
 	
   /* divided by 8 because of the prescalar
@@ -118,7 +118,7 @@ ISR(TIMER0_OVF_vect){
 			TXPORT &= ~(1 << TXPIN); // START BIT
 			bit++;
 			TxByte = TxBuffer[--TxBufferPointer]; //pop
-			state = uart_trans_in_byte;
+			state = SWuart_trans_in_byte;
 			// Next line for debugging only
 			// TxBuffer[TxBufferPointer]=0;
 	} else if(bit < 9){
@@ -134,30 +134,30 @@ ISR(TIMER0_OVF_vect){
 			//STOP BIT
 			bit = 0;
 			TXPORT |= (1 << TXPIN);  // STOP BIT
-			state = uart_transmitting;
+			state = SWuart_transmitting;
 				if(TxBufferPointer == 0){
 					Disable_TxTimer;
-					state = uart_idle;
+					state = SWuart_idle;
 				}
 	}else{
 			//something went wrong
 			bit = 0;
 		}
 }
-Status_T Rx_UART(uint8_t * byte)
+Status_T Rx_SWuart(uint8_t * byte)
 {
-	return UART_Rx_No_Data;
+	return SWuart_Rx_No_Data;
 }
-Status_T Tx_UART(uint8_t byte)
+Status_T Tx_SWuart(uint8_t byte)
 {
 	Status_T ret;
 	uint8_t i,tmp;
 	switch(state){
-	case uart_trans_in_byte:
-		while(state == uart_trans_in_byte);
-		if(state == uart_idle)
+	case SWuart_trans_in_byte:
+		while(state == SWuart_trans_in_byte);
+		if(state == SWuart_idle)
 			break;
-	case uart_transmitting:
+	case SWuart_transmitting:
 		// Add character to the queue buffer
 		if(TxBufferPointer < TX_BUFF_SIZE)
 		{
@@ -171,35 +171,35 @@ Status_T Tx_UART(uint8_t byte)
 			TxBuffer[0] = byte;
 			TxBufferPointer++;
 			sei();
-			ret = UART_TX_Buffered;
+			ret = SWuart_TX_Buffered;
 		}else{
-			ret = UART_Tx_BufferFull;
+			ret = SWuart_Tx_BufferFull;
 		}
 		break;
-	case uart_idle:
+	case SWuart_idle:
 		// idle state
 		Enable_TxTimer;
 		TxBuffer[TxBufferPointer++] = byte;
-		state = uart_transmitting;
-		ret = UART_Tx_Ok;
+		state = SWuart_transmitting;
+		ret = SWuart_Tx_Ok;
 		break;
 	default:
 		//exception
-		ret = UART_MEM_ERR;
+		ret = SWuart_MEM_ERR;
 		break;
 	}
 	return ret;
 }
-Status_T Tx_UART_Str(char *byte)
+Status_T Tx_SWuart_Str(char *byte)
 {
 	uint8_t i = 0;
 	Status_T ret;
 	while(byte[i]!= '\0')
 	{
-		ret = Tx_UART(byte[i]);
+		ret = Tx_SWuart(byte[i]);
 		i++;
 	}
-	ret = Tx_UART('\r');
-	ret = Tx_UART('\n');
+	ret = Tx_SWuart('\r');
+	ret = Tx_SWuart('\n');
 	return ret;
 }
