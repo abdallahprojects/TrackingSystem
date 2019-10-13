@@ -9,12 +9,16 @@
 #ifndef SWuart_H_
 #define SWuart_H_
 // Configuration settings
+#define RXDDR  DDRD
+#define RXPORT PORTD
+#define RXPIN PD6
 #define TXDDR  DDRD
 #define TXPORT PORTD
 #define TXPIN PD7
 #define STOP_BYTES 1
 
 ///
+#define RX_TIMER_COMP			0x0007
 #define Stop_Timer1 			TCCR1B &= ~(1<<CS11); 	\
 								TCCR1B &= ~(1<<CS10); 	\
 								TCCR1B &= ~(1<<CS12)
@@ -39,7 +43,7 @@
 #define RX_PIN (PIND & (1<<PD6))
 
 //Rx Buffer size in bytes
-#define RxBUFF_SIZE 100
+#define RxBUFF_SIZE 500
 #define TX_BUFF_SIZE 50
 
 // new types

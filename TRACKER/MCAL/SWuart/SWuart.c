@@ -13,9 +13,11 @@ static uint16_t t_unit;
 static volatile uint16_t InputCapture;
 static volatile uint8_t RxBuffer[RxBUFF_SIZE+1];
 static volatile uint8_t TxBuffer[TX_BUFF_SIZE+1];
-static volatile uint8_t TxBufferPointer,TxByte;
+static volatile uint8_t TxBufferPointer,TxByte,RxBufferPointer;
 static volatile uint8_t bit = 10;
-static volatile SWuart_state_T state= SWuart_idle;
+static volatile SWuart_state_T Txstate= SWuart_idle;
+static volatile SWuart_state_T Rxstate= SWuart_idle;
+static volatile Status_T RxStatus = SWuart_Rx_No_Data;
 void Init_SWuart(uint16_t BaudRate)
 {
 	
@@ -71,7 +73,7 @@ ISR(TIMER1_CAPT_vect){
 	InputCapture = ICR1; 
 	// Start the timer compare value to read first bit
 	OCR1A = (t_unit * 3)/2;
-	TCNT1 = 0x0003;
+	TCNT1 = RX_TIMER_COMP;
 	TIFR  = (1<<OCF1A);
 	// Disable the Timer1 cap interrupt
 	Disable_InputCapture;
@@ -80,12 +82,12 @@ ISR(TIMER1_CAPT_vect){
 }
 
 ISR(TIMER1_COMPA_vect){
-	static uint8_t bitCounter,NumInBytes;
+	static uint8_t bitCounter;
 	static uint8_t byte;
 	cli();
 	//configure out compare on one byte time
 	OCR1A = (t_unit);
-	TCNT1 = 0x0003;
+	TCNT1 = RX_TIMER_COMP;
 	TIFR  = (1<<OCF1A);
 	// read the data bits and increment bit counter
 	if(bitCounter < 8)
@@ -95,11 +97,12 @@ ISR(TIMER1_COMPA_vect){
 		bitCounter++;
 	}else{
 		bitCounter = 0;
-		RxBuffer[NumInBytes] = byte;
-		NumInBytes++;
-		if(NumInBytes >= RxBUFF_SIZE)
+		RxBuffer[RxBufferPointer] = byte;
+		RxBufferPointer++;
+		if(RxBufferPointer >= RxBUFF_SIZE)
 		{
-			NumInBytes = 0;
+			RxStatus = SWuart_Rx_OverFlow;
+			RxBufferPointer = 0;
 		}
 		TIFR = (1<<ICF1);
 		Disable_OutputCompare;
@@ -118,7 +121,7 @@ ISR(TIMER0_OVF_vect){
 			TXPORT &= ~(1 << TXPIN); // START BIT
 			bit++;
 			TxByte = TxBuffer[--TxBufferPointer]; //pop
-			state = SWuart_trans_in_byte;
+			Txstate = SWuart_trans_in_byte;
 			// Next line for debugging only
 			// TxBuffer[TxBufferPointer]=0;
 	} else if(bit < 9){
@@ -134,10 +137,10 @@ ISR(TIMER0_OVF_vect){
 			//STOP BIT
 			bit = 0;
 			TXPORT |= (1 << TXPIN);  // STOP BIT
-			state = SWuart_transmitting;
+			Txstate = SWuart_transmitting;
 				if(TxBufferPointer == 0){
 					Disable_TxTimer;
-					state = SWuart_idle;
+					Txstate = SWuart_idle;
 				}
 	}else{
 			//something went wrong
@@ -146,17 +149,48 @@ ISR(TIMER0_OVF_vect){
 }
 Status_T Rx_SWuart(uint8_t * byte)
 {
-	return SWuart_Rx_No_Data;
+	Status_T ret;
+	uint8_t i;
+	if(RxStatus != SWuart_Rx_OverFlow)
+	{
+		 if (RxBufferPointer == 0){
+				ret =  SWuart_Rx_No_Data;
+		}else
+		{
+			cli();
+			*byte = RxBuffer[0];
+			RxBufferPointer--;
+			for(i=0;i<RxBufferPointer;i++){
+				RxBuffer[i] = RxBuffer[i+1];
+			}
+
+			sei();
+			if (RxBufferPointer == 0){
+						ret =  SWuart_Rx_OK;
+			}else{
+				ret = SWuart_Rx_OK_Again;
+			}
+		}
+
+	}else{
+		ret = SWuart_Rx_OverFlow;
+	}
+	return ret;
 }
 Status_T Tx_SWuart(uint8_t byte)
 {
 	Status_T ret;
 	uint8_t i,tmp;
-	switch(state){
-	case SWuart_trans_in_byte:
-		while(state == SWuart_trans_in_byte);
-		if(state == SWuart_idle)
-			break;
+	// Don't update the buffer in the middle of byte transmission
+	while(Txstate == SWuart_trans_in_byte);
+	switch(Txstate){
+	case SWuart_idle:
+		// idle Txstate
+		Enable_TxTimer;
+		TxBuffer[TxBufferPointer++] = byte;
+		Txstate = SWuart_transmitting;
+		ret = SWuart_Tx_Ok;
+		break;
 	case SWuart_transmitting:
 		// Add character to the queue buffer
 		if(TxBufferPointer < TX_BUFF_SIZE)
@@ -175,13 +209,6 @@ Status_T Tx_SWuart(uint8_t byte)
 		}else{
 			ret = SWuart_Tx_BufferFull;
 		}
-		break;
-	case SWuart_idle:
-		// idle state
-		Enable_TxTimer;
-		TxBuffer[TxBufferPointer++] = byte;
-		state = SWuart_transmitting;
-		ret = SWuart_Tx_Ok;
 		break;
 	default:
 		//exception

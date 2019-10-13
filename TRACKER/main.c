@@ -13,11 +13,17 @@ int main(void)
 	// flip PA2 status
     /* Replace with your application code */
 	DDRA |= 0xFF;
-	Init_SWuart(57600);
+	Init_SWuart(9600);
     while (1) 
     {
+		uint8_t v;
+		Status_T st;
     	_delay_ms(1000);
-		Tx_SWuart_Str("Hello world !!");
+		st = Rx_SWuart(&v);
+		while(st == SWuart_Rx_OK || st == SWuart_Rx_OK_Again){
+			Tx_SWuart(v);
+			st = Rx_SWuart(&v);
+		}
 		//Tx_SWuart(0x61);
     }
 }
