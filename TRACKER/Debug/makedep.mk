@@ -6,3 +6,5 @@ main.c
 
 MCAL\SWuart\SWuart.c
 
+Service\UBLOX_6M\ublox_6m.c
+

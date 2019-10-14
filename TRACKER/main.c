@@ -8,6 +8,8 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <SWuart.h>
+#include <ublox_6m.h>
+
 int main(void)
 {
 	// flip PA2 status
@@ -16,14 +18,8 @@ int main(void)
 	Init_SWuart(9600);
     while (1) 
     {
-		uint8_t v;
-		Status_T st;
-    	_delay_ms(1000);
-		st = Rx_SWuart(&v);
-		while(st == SWuart_Rx_OK || st == SWuart_Rx_OK_Again){
-			Tx_SWuart(v);
-			st = Rx_SWuart(&v);
-		}
+		_delay_ms(1);
+    	ublox_cyclic5ms();
 		//Tx_SWuart(0x61);
     }
 }

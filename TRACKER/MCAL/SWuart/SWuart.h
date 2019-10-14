@@ -43,8 +43,8 @@
 #define RX_PIN (PIND & (1<<PD6))
 
 //Rx Buffer size in bytes
-#define RxBUFF_SIZE 500
-#define TX_BUFF_SIZE 50
+#define RxBUFF_SIZE 100
+#define TX_BUFF_SIZE 100
 
 // new types
 typedef enum Status_E{
