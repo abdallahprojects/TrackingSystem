@@ -23,7 +23,9 @@ static volatile uint8_t bit = 10;
 static volatile SWuart_state_T Txstate= SWuart_idle;
 static volatile SWuart_state_T Rxstate= SWuart_idle;
 static volatile Status_T RxStatus = SWuart_Rx_No_Data;
-
+#ifdef USE_PRINT_F
+int Tx_SWuartWrap(char ch,FILE * stream);
+#endif
 void Init_SWuart(uint16_t BaudRate)
 {
 	

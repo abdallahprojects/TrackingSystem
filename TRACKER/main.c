@@ -46,4 +46,6 @@ void PrintDiag(void){
 	GPS_data_t readData;
 	UBLOX_readGPSData(&readData);
 	printf("Time =  %dh,%dm,%ds \r\n",readData.gps_hr-4,readData.gps_min,readData.gps_sec);
+	printf("Location = %u %u.%lu %c , %u %u.%lu %c \r\n",readData.lat_deg,readData.lat_min,readData.lat_sec,readData.Lat_NS,\
+														readData.long_deg,readData.long_min,readData.long_sec,readData.Long_EW);
 }
