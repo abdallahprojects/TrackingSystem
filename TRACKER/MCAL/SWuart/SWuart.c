@@ -5,19 +5,25 @@
  *  Author: asere
  */ 
 #include <stdint.h>
+#ifdef USE_PRINT_F
+#include <stdio.h>
+#endif
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "SWuart.h"
 // clocks per one bit
 static uint16_t t_unit;
 static volatile uint16_t InputCapture;
-static volatile uint8_t RxBuffer[RxBUFF_SIZE+1];
+static volatile uint8_t RxBuffer[RXBUFF_SIZE+1];
 static volatile uint8_t TxBuffer[TX_BUFF_SIZE+1];
-static volatile uint8_t TxBufferPointer,TxByte,RxBufferPointer;
+static volatile uint8_t TxBufferPointer,TxByte;
+static volatile uint16_t RxBufferHead,RxBufferTail;
+static volatile uint16_t TxBufferHead,TxBufferTail;
 static volatile uint8_t bit = 10;
 static volatile SWuart_state_T Txstate= SWuart_idle;
 static volatile SWuart_state_T Rxstate= SWuart_idle;
 static volatile Status_T RxStatus = SWuart_Rx_No_Data;
+
 void Init_SWuart(uint16_t BaudRate)
 {
 	
@@ -59,16 +65,15 @@ void Init_SWuart(uint16_t BaudRate)
 	// Enable Input Capture Interrupt on Timer 1
 	Enable_InputCapture;
 
-	
-	// Enable Global Interrupt
-	sei();
+#ifdef USE_PRINT_F
+	static FILE uart_str = FDEV_SETUP_STREAM(Tx_SWuartWrap, NULL, _FDEV_SETUP_RW);
+	stdout = &uart_str;
+#endif
 	
 }
 
 ISR(TIMER1_CAPT_vect){
 	cli(); // disable global Interrupt
-	DDRA = 0xFF;
-	PORTA = 0x04;
 	// first thing first: read the ICP register
 	InputCapture = ICR1; 
 	// Start the timer compare value to read first bit
@@ -97,12 +102,11 @@ ISR(TIMER1_COMPA_vect){
 		bitCounter++;
 	}else{
 		bitCounter = 0;
-		RxBuffer[RxBufferPointer] = byte;
-		RxBufferPointer++;
-		if(RxBufferPointer >= RxBUFF_SIZE)
+		RxBuffer[RxBufferHead] = byte;
+		RxBufferHead = (RxBufferHead == RXBUFF_SIZE)? 0:(RxBufferHead+1);
+		if((RxBufferHead+1 == RxBufferTail)||((RxBufferHead == RXBUFF_SIZE) && (RxBufferTail == 0)))
 		{
 			RxStatus = SWuart_Rx_OverFlow;
-			RxBufferPointer = 0;
 		}
 		TIFR = (1<<ICF1);
 		Disable_OutputCompare;
@@ -120,10 +124,14 @@ ISR(TIMER0_OVF_vect){
 	if(bit == 0){
 			TXPORT &= ~(1 << TXPIN); // START BIT
 			bit++;
-			TxByte = TxBuffer[--TxBufferPointer]; //pop
-			Txstate = SWuart_trans_in_byte;
 			// Next line for debugging only
 			// TxBuffer[TxBufferPointer]=0;
+			// Circular buffer
+			TxByte = TxBuffer[TxBufferTail++];
+			Txstate = SWuart_trans_in_byte;
+			if(TxBufferTail == TX_BUFF_SIZE+1)
+				TxBufferTail = 0;
+
 	} else if(bit < 9){
 			//DATA BITS
 			if((TxByte & 0x1)){ //0b10000000, test left most bit // DATA BITS
@@ -138,10 +146,11 @@ ISR(TIMER0_OVF_vect){
 			bit = 0;
 			TXPORT |= (1 << TXPIN);  // STOP BIT
 			Txstate = SWuart_transmitting;
-				if(TxBufferPointer == 0){
-					Disable_TxTimer;
-					Txstate = SWuart_idle;
-				}
+			// Check Circular buffer for more data to read
+			if (TxBufferTail == TxBufferHead){
+				Disable_TxTimer;
+				Txstate = SWuart_idle;
+			}
 	}else{
 			//something went wrong
 			bit = 0;
@@ -150,22 +159,19 @@ ISR(TIMER0_OVF_vect){
 Status_T Rx_SWuart(uint8_t * byte)
 {
 	Status_T ret;
-	uint8_t i;
 	if(RxStatus != SWuart_Rx_OverFlow)
 	{
-		 if (RxBufferPointer == 0){
+		 if (RxBufferTail == RxBufferHead){
 				ret =  SWuart_Rx_No_Data;
 		}else
 		{
 			cli();
-			*byte = RxBuffer[0];
-			RxBufferPointer--;
-			for(i=0;i<RxBufferPointer;i++){
-				RxBuffer[i] = RxBuffer[i+1];
-			}
+			*byte = RxBuffer[RxBufferTail++];
+			if(RxBufferTail == RXBUFF_SIZE+1)
+				RxBufferTail = 0;
 
 			sei();
-			if (RxBufferPointer == 0){
+			if (RxBufferHead == RxBufferTail){
 						ret =  SWuart_Rx_OK;
 			}else{
 				ret = SWuart_Rx_OK_Again;
@@ -174,6 +180,7 @@ Status_T Rx_SWuart(uint8_t * byte)
 
 	}else{
 		ret = SWuart_Rx_OverFlow;
+		RxStatus = SWuart_Rx_OK_Again;
 	}
 	return ret;
 }
@@ -182,41 +189,31 @@ Status_T Tx_SWuart(uint8_t byte)
 	Status_T ret;
 	uint8_t i,tmp;
 	// Don't update the buffer in the middle of byte transmission
-	while(Txstate == SWuart_trans_in_byte);
-	switch(Txstate){
-	case SWuart_idle:
+	//while(Txstate == SWuart_trans_in_byte);
 		// idle Txstate
-		Enable_TxTimer;
-		TxBuffer[TxBufferPointer++] = byte;
-		Txstate = SWuart_transmitting;
-		ret = SWuart_Tx_Ok;
-		break;
-	case SWuart_transmitting:
-		// Add character to the queue buffer
-		if(TxBufferPointer < TX_BUFF_SIZE)
-		{
-			cli(); // critical not to read while writing
-			for(i=0;i<TxBufferPointer;i++)
+
+		if((TxBufferHead+1 == TxBufferTail)||((TxBufferHead == TX_BUFF_SIZE) && (TxBufferTail == 0)))
 			{
-				tmp = TxBuffer[0];
-				TxBuffer[0] = TxBuffer[i+1];
-				TxBuffer[i+1] = tmp;
+				ret = SWuart_Tx_OverFlow;
+				//Txstate = SWuart_trans_overflow;
+			}else{
+				if(Txstate == SWuart_idle)
+					Enable_TxTimer;
+				//Txstate = SWuart_transmitting;
+				TxBuffer[TxBufferHead] = byte;
+				TxBufferHead = (TxBufferHead == TX_BUFF_SIZE)? 0:(TxBufferHead+1);
+				ret = SWuart_Tx_Ok;
 			}
-			TxBuffer[0] = byte;
-			TxBufferPointer++;
-			sei();
-			ret = SWuart_TX_Buffered;
-		}else{
-			ret = SWuart_Tx_BufferFull;
-		}
-		break;
-	default:
-		//exception
-		ret = SWuart_MEM_ERR;
-		break;
-	}
 	return ret;
 }
+#ifdef USE_PRINT_F
+int Tx_SWuartWrap(char ch,FILE * stream)
+{
+	Tx_SWuart(ch);
+	return 0;
+}
+#endif
+
 Status_T Tx_SWuart_Str(char *byte)
 {
 	uint8_t i = 0;

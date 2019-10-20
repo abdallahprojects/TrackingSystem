@@ -43,8 +43,8 @@
 #define RX_PIN (PIND & (1<<PD6))
 
 //Rx Buffer size in bytes
-#define RxBUFF_SIZE 100
-#define TX_BUFF_SIZE 100
+#define RXBUFF_SIZE 20
+#define TX_BUFF_SIZE 80
 
 // new types
 typedef enum Status_E{
@@ -55,12 +55,14 @@ typedef enum Status_E{
 	SWuart_Tx_Ok,
 	SWuart_Tx_BufferFull,
 	SWuart_TX_Buffered,
+	SWuart_Tx_OverFlow,
 	SWuart_MEM_ERR
 	}Status_T;
 
 typedef enum SWuart_state_E{
 	SWuart_transmitting,
 	SWuart_trans_in_byte,
+	SWuart_trans_overflow,
 	SWuart_idle
 }SWuart_state_T;
 // function prototypes
