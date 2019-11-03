@@ -14,8 +14,10 @@
 
 typedef enum SIM800_St_E{
 	SIM800_TestAliv,
+	SIM800_SetErrorMode,
 	SIM800_NetAtt,
-	SIM800_RxWaiting
+	SIM800_RxWaiting,
+	SIM800_END
 }SIM800_St_t;
 
 static struct SIM800L_S{
@@ -35,7 +37,9 @@ static SIM800_St_t SIM800_State = SIM800_TestAliv;
 
 // Local state machine calls
 void TestOK(void);
+void SetErrorMode(void);
 void NetAtt(void);
 void rxWaitFor(char * ch,uint8_t size,uint16_t timeout,SIM800_St_t next_state);
 void waiting(void);
+void endFun(void);
 #endif /* SIM800L_LOC_H_ */

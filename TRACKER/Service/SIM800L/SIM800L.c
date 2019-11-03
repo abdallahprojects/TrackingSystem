@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <HWuart.h>
+#include <SWuart.h> // for debugging info
 #include <LEDs.h>
 // internal include
 #include "SIM800L.h"
@@ -30,8 +31,14 @@ void SIM800L_Cyclic5ms(void)
 		case SIM800_TestAliv:
 			TestOK();
 			break;
+		case SIM800_SetErrorMode:
+			SetErrorMode();
+			break;
 		case SIM800_NetAtt: // Attach to the network
 			NetAtt();
+			break;
+		case SIM800_END: // Attach to the network
+			endFun();
 			break;
 		case SIM800_RxWaiting:
 			waiting();
@@ -44,11 +51,24 @@ void SIM800L_Cyclic5ms(void)
 
 
 void TestOK(void){
-	sim800l.tx("AT\n");
+	sim800l.tx("AT\r\n");
+	sim800l.rxWaitFor(COMMAND("OK"),1000,SIM800_SetErrorMode); // wait for 5 seconds if not return back
+}
+
+void SetErrorMode(void){
+	sim800l.tx("AT+CMEE=0\r\n");
 	sim800l.rxWaitFor(COMMAND("OK"),1000,SIM800_NetAtt); // wait for 5 seconds if not return back
 }
+
 void NetAtt(void) {
 	LED_ON(LED2);
+	ENABLE_SW_PRINTF();
+	printf("AT is OK !\r\n");
+	ENABLE_HW_PRINTF();
+	SIM800_State = SIM800_END;
+	//LED_ON(LED3);
+}
+void endFun(void) {
 	//LED_ON(LED3);
 }
 void waiting(void){
