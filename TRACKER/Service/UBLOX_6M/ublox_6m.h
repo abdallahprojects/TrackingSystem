@@ -33,6 +33,7 @@ typedef struct GPS_data_S{
 	uint8_t gps_numSats;
 	}GPS_data_t;
 
-void ublox_cyclic(void);
+void UBLOX_Init(void);
+void UBLOX_cyclic(void);
 void UBLOX_readGPSData(GPS_data_t *readData);
 #endif /* SERVICES_UBLOX_6M_UBLOX_6M_H_ */

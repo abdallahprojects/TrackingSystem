@@ -35,7 +35,7 @@
       <ToolOptions>
         <InterfaceProperties>
           <IspClock>250000</IspClock>
-          <JtagDbgClock>100000</JtagDbgClock>
+          <JtagDbgClock>200000</JtagDbgClock>
         </InterfaceProperties>
         <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
@@ -44,7 +44,7 @@
       <ToolName>AVR Dragon</ToolName>
     </com_atmel_avrdbg_tool_avrdragon>
     <avrtoolinterface>JTAG</avrtoolinterface>
-    <avrtoolinterfaceclock>100000</avrtoolinterfaceclock>
+    <avrtoolinterfaceclock>200000</avrtoolinterfaceclock>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -99,7 +99,7 @@
     <ListValues>
       <Value>DEBUG</Value>
       <Value>F_CPU=12000000UL</Value>
-      <Value>USE_PRINT_F</Value>
+      <Value>USE_HPRINT_F</Value>
     </ListValues>
   </avrgcc.compiler.symbols.DefSymbols>
   <avrgcc.compiler.directories.IncludePaths>
@@ -109,6 +109,9 @@
       <Value>../Service/UBLOX_6M</Value>
       <Value>../Service/OS</Value>
       <Value>../MCAL/OS</Value>
+      <Value>../MCAL/HWuart</Value>
+      <Value>../lib/LEDs</Value>
+      <Value>../Service/SIM800L</Value>
     </ListValues>
   </avrgcc.compiler.directories.IncludePaths>
   <avrgcc.compiler.optimization.level>Optimize (-O1)</avrgcc.compiler.optimization.level>
@@ -131,7 +134,19 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="lib\Buff_Cir\Buff_Cir.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\LEDs\LEDs.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="main.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="MCAL\HWuart\HWuart.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="MCAL\HWuart\HWuart.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="MCAL\OS\OStimer.c">
@@ -152,6 +167,15 @@
     <Compile Include="Service\OS\OS.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Service\SIM800L\SIM800L.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Service\SIM800L\SIM800L.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Service\SIM800L\SIM800L_Loc.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Service\UBLOX_6M\ublox_6m.c">
       <SubType>compile</SubType>
     </Compile>
@@ -160,10 +184,15 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="lib\Buff_Cir" />
+    <Folder Include="lib\LEDs" />
     <Folder Include="MCAL" />
+    <Folder Include="MCAL\HWuart" />
     <Folder Include="MCAL\OS" />
     <Folder Include="MCAL\SWuart" />
+    <Folder Include="lib" />
     <Folder Include="Service" />
+    <Folder Include="Service\SIM800L" />
     <Folder Include="Service\OS" />
     <Folder Include="Service\UBLOX_6M" />
   </ItemGroup>

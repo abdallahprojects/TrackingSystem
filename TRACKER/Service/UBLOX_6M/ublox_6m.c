@@ -23,7 +23,13 @@ void ExLongEW(uint8_t ch);
 void ExSatFix(uint8_t ch);
 void ExNumOfSats(uint8_t ch);
 
-void ublox_cyclic(void)
+
+void UBLOX_Init(void)
+{
+	SWuart_Init(9600);
+}
+
+void UBLOX_cyclic(void)
 {
 	uint8_t ch;
 	if(scanCh(&ch)){
@@ -60,8 +66,8 @@ void ublox_cyclic(void)
 
 }
 uint8_t scanCh(uint8_t * ch){
-	Status_T status;
-		status = Rx_SWuart(ch);
+	SWuart_Status_T status;
+		status = SWuart_Rx(ch);
 		if(status == SWuart_Rx_OK || status == SWuart_Rx_OK_Again){
 			return TRUE;
 		}else{

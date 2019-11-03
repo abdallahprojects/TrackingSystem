@@ -5,9 +5,9 @@
  *  Author: asere
  */ 
 #include <stdint.h>
-#ifdef USE_PRINT_F
+
 #include <stdio.h>
-#endif
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "SWuart.h"
@@ -22,11 +22,13 @@ static volatile uint16_t TxBufferHead,TxBufferTail;
 static volatile uint8_t bit = 10;
 static volatile SWuart_state_T Txstate= SWuart_idle;
 static volatile SWuart_state_T Rxstate= SWuart_idle;
-static volatile Status_T RxStatus = SWuart_Rx_No_Data;
-#ifdef USE_PRINT_F
-int Tx_SWuartWrap(char ch,FILE * stream);
-#endif
-void Init_SWuart(uint16_t BaudRate)
+static volatile SWuart_Status_T RxStatus = SWuart_Rx_No_Data;
+static FILE uart_str;
+
+int SWuartWrap_Tx(char ch,FILE * stream);
+
+
+void SWuart_Init(uint16_t BaudRate)
 {
 	
   /* divided by 8 because of the prescalar
@@ -67,11 +69,14 @@ void Init_SWuart(uint16_t BaudRate)
 	// Enable Input Capture Interrupt on Timer 1
 	Enable_InputCapture;
 
-#ifdef USE_PRINT_F
-	static FILE uart_str = FDEV_SETUP_STREAM(Tx_SWuartWrap, NULL, _FDEV_SETUP_RW);
+
+	uart_str = FDEV_SETUP_STREAM(SWuartWrap_Tx, NULL, _FDEV_SETUP_RW);
+
+}
+
+void SWuart_EnablePrintf(void)
+{
 	stdout = &uart_str;
-#endif
-	
 }
 
 ISR(TIMER1_CAPT_vect){
@@ -158,9 +163,9 @@ ISR(TIMER0_OVF_vect){
 			bit = 0;
 		}
 }
-Status_T Rx_SWuart(uint8_t * byte)
+SWuart_Status_T SWuart_Rx(uint8_t * byte)
 {
-	Status_T ret;
+	SWuart_Status_T ret;
 	if(RxStatus != SWuart_Rx_OverFlow)
 	{
 		 if (RxBufferTail == RxBufferHead){
@@ -182,14 +187,13 @@ Status_T Rx_SWuart(uint8_t * byte)
 
 	}else{
 		ret = SWuart_Rx_OverFlow;
-		RxStatus = SWuart_Rx_OK_Again;
 	}
 	return ret;
 }
-Status_T Tx_SWuart(uint8_t byte)
+SWuart_Status_T SWuart_Tx(uint8_t byte)
 {
-	Status_T ret;
-	uint8_t i,tmp;
+	SWuart_Status_T ret;
+
 	// Don't update the buffer in the middle of byte transmission
 	//while(Txstate == SWuart_trans_in_byte);
 		// idle Txstate
@@ -208,24 +212,24 @@ Status_T Tx_SWuart(uint8_t byte)
 			}
 	return ret;
 }
-#ifdef USE_PRINT_F
-int Tx_SWuartWrap(char ch,FILE * stream)
+
+int SWuartWrap_Tx(char ch,FILE * stream)
 {
-	Tx_SWuart(ch);
+	SWuart_Tx(ch);
 	return 0;
 }
-#endif
 
-Status_T Tx_SWuart_Str(char *byte)
+
+SWuart_Status_T SWuart_Str_Tx(char *byte)
 {
 	uint8_t i = 0;
-	Status_T ret;
+	SWuart_Status_T ret;
 	while(byte[i]!= '\0')
 	{
-		ret = Tx_SWuart(byte[i]);
+		ret = SWuart_Tx(byte[i]);
 		i++;
 	}
-	ret = Tx_SWuart('\r');
-	ret = Tx_SWuart('\n');
+	ret = SWuart_Tx('\r');
+	ret = SWuart_Tx('\n');
 	return ret;
 }

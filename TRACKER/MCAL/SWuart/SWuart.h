@@ -42,12 +42,14 @@
 
 #define RX_PIN (PIND & (1<<PD6))
 
+#define ENABLE_SW_PRINTF()		SWuart_EnablePrintf()
+
 //Rx Buffer size in bytes
 #define RXBUFF_SIZE 20
 #define TX_BUFF_SIZE 80
 
 // new types
-typedef enum Status_E{
+typedef enum SWuart_Status_E{
 	SWuart_Rx_No_Data,
 	SWuart_Rx_OK,
 	SWuart_Rx_OK_Again,
@@ -57,7 +59,7 @@ typedef enum Status_E{
 	SWuart_TX_Buffered,
 	SWuart_Tx_OverFlow,
 	SWuart_MEM_ERR
-	}Status_T;
+	}SWuart_Status_T;
 
 typedef enum SWuart_state_E{
 	SWuart_transmitting,
@@ -66,9 +68,10 @@ typedef enum SWuart_state_E{
 	SWuart_idle
 }SWuart_state_T;
 // function prototypes
-void Init_SWuart(uint16_t BaudRate);
-Status_T Tx_SWuart(uint8_t byte);
-Status_T Rx_SWuart(uint8_t *byte);
-Status_T Tx_SWuart_Str(char *byte);
+void SWuart_Init(uint16_t BaudRate);
+SWuart_Status_T SWuart_Tx(uint8_t byte);
+SWuart_Status_T SWuart_Rx(uint8_t *byte);
+SWuart_Status_T SWuart_Tx_Str(char *byte);
+void SWuart_EnablePrintf(void);
 
 #endif /* SWuart_H_ */
