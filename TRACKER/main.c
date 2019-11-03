@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <util/delay.h>
 #include <SIM800L.h>
+#include <SWuart.h>
+#include <HWuart.h>
 #include "LEDs.h"
 #include <ublox_6m.h>
 #include <OS.h>

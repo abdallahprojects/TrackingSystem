@@ -23,10 +23,10 @@ static volatile uint8_t bit = 10;
 static volatile SWuart_state_T Txstate= SWuart_idle;
 static volatile SWuart_state_T Rxstate= SWuart_idle;
 static volatile SWuart_Status_T RxStatus = SWuart_Rx_No_Data;
-static FILE uart_str;
+
 
 int SWuartWrap_Tx(char ch,FILE * stream);
-
+static FILE uart_str = FDEV_SETUP_STREAM(SWuartWrap_Tx, NULL, _FDEV_SETUP_RW);
 
 void SWuart_Init(uint16_t BaudRate)
 {
@@ -68,9 +68,6 @@ void SWuart_Init(uint16_t BaudRate)
 	/////////// End Timer 0 configuration ////////////////////////////////
 	// Enable Input Capture Interrupt on Timer 1
 	Enable_InputCapture;
-
-
-	uart_str = FDEV_SETUP_STREAM(SWuartWrap_Tx, NULL, _FDEV_SETUP_RW);
 
 }
 

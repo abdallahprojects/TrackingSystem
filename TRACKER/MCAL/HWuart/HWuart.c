@@ -16,19 +16,21 @@
 #define BAUD_CONV(BAUD) (((F_CPU / (BAUD * 16UL))) - 1)
 
 
-static volatile uint8_t RxBuffer[RX_BUFF_SIZE+1];
-static volatile uint8_t TxBuffer[TX_BUFF_SIZE+1];
+static volatile uint8_t RxBuffer[RX_HWBUFF_SIZE+1];
+static volatile uint8_t TxBuffer[TX_HWBUFF_SIZE+1];
 static volatile uint16_t RxBufferHead,RxBufferTail;
 static volatile uint16_t TxBufferHead,TxBufferTail;
-static FILE uart_str;
+
 
 static volatile HWuart_Status_T RxStatus = HWuart_Rx_No_Data;
 
 int HWuartWrap_Tx(char ch,FILE * stream);
-
+static FILE uart_str = FDEV_SETUP_STREAM(HWuartWrap_Tx, NULL, _FDEV_SETUP_RW);
 
 void HWuart_Init(long USART_BAUDRATE)
 {
+
+		stdout = &uart_str;
 	// Init UART PINS
 	DDRD |= (1<<PD1);  // Tx pin as output
 	DDRD &= ~(1<<PD0);	// Rx pin as input
@@ -39,7 +41,7 @@ void HWuart_Init(long USART_BAUDRATE)
 	UBRRL = (uint8_t)BAUD_CONV(USART_BAUDRATE);		/* Load lower 8-bits of the baud rate */
 	UBRRH = (uint8_t)(BAUD_CONV(USART_BAUDRATE) >> 8);	/* Load upper 8-bits */
 
-	uart_str = FDEV_SETUP_STREAM(HWuartWrap_Tx, NULL, _FDEV_SETUP_RW);
+
 
 
 }
@@ -51,8 +53,8 @@ void HWuart_EnablePrintf(void)
 ISR(USART_RXC_vect)
 {
 	RxBuffer[RxBufferHead] = UDR;
-	RxBufferHead = (RxBufferHead == RX_BUFF_SIZE)? 0:(RxBufferHead+1);
-	if((RxBufferHead+1 == RxBufferTail)||((RxBufferHead == RX_BUFF_SIZE) && (RxBufferTail == 0)))
+	RxBufferHead = (RxBufferHead == RX_HWBUFF_SIZE)? 0:(RxBufferHead+1);
+	if((RxBufferHead+1 == RxBufferTail)||((RxBufferHead == RX_HWBUFF_SIZE) && (RxBufferTail == 0)))
 	{
 		RxStatus = HWuart_Rx_OverFlow;
 	}
@@ -66,7 +68,7 @@ ISR(USART_UDRE_vect)
 		DisableTxInterrupt();
 	}else{
 	UDR = TxBuffer[TxBufferTail++];
-	if(TxBufferTail == TX_BUFF_SIZE+1)
+	if(TxBufferTail == TX_HWBUFF_SIZE+1)
 		TxBufferTail = 0;
 	}
 
@@ -75,7 +77,7 @@ HWuart_Status_T HWuart_Tx(uint8_t byte)
 {
 	HWuart_Status_T ret;
 
-		if((TxBufferHead+1 == TxBufferTail)||((TxBufferHead == TX_BUFF_SIZE) && (TxBufferTail == 0)))
+		if((TxBufferHead+1 == TxBufferTail)||((TxBufferHead == TX_HWBUFF_SIZE) && (TxBufferTail == 0)))
 			{
 				//cant store more bytes
 				ret = HWuart_Tx_OverFlow;
@@ -83,7 +85,7 @@ HWuart_Status_T HWuart_Tx(uint8_t byte)
 				if(UCSRA & (1<<UDRE)) // Transmit is Idle
 				{
 					TxBuffer[TxBufferHead] = byte;
-					TxBufferHead = (TxBufferHead == TX_BUFF_SIZE)? 0:(TxBufferHead+1);
+					TxBufferHead = (TxBufferHead == TX_HWBUFF_SIZE)? 0:(TxBufferHead+1);
 					EnableTxInterrupt();
 					ret = HWuart_Tx_Ok;
 				}else{
@@ -91,7 +93,7 @@ HWuart_Status_T HWuart_Tx(uint8_t byte)
 					// but make sure not to be interrupted while filling in the buffer
 					DisableTxInterrupt();
 					TxBuffer[TxBufferHead] = byte;
-					TxBufferHead = (TxBufferHead == TX_BUFF_SIZE)? 0:(TxBufferHead+1);
+					TxBufferHead = (TxBufferHead == TX_HWBUFF_SIZE)? 0:(TxBufferHead+1);
 					EnableTxInterrupt();
 					ret = HWuart_TX_Buffered;
 				}
@@ -109,7 +111,7 @@ HWuart_Status_T HWuart_Rx(uint8_t * byte)
 		{
 			DisableRxInterrupt();
 			*byte = RxBuffer[RxBufferTail++];
-			if(RxBufferTail == RX_BUFF_SIZE+1)
+			if(RxBufferTail == RX_HWBUFF_SIZE+1)
 				RxBufferTail = 0;
 
 			EnableRxInterrupt();

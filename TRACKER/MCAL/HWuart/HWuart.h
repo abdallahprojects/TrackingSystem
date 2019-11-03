@@ -8,8 +8,8 @@
 #ifndef MCAL_HWUART_HWUART_H_
 #define MCAL_HWUART_HWUART_H_
 
-#define RX_BUFF_SIZE	20
-#define TX_BUFF_SIZE	150
+#define RX_HWBUFF_SIZE	20
+#define TX_HWBUFF_SIZE	150
 
 #define EnableTxInterrupt()		UCSRB |= (1<<UDRIE)
 
