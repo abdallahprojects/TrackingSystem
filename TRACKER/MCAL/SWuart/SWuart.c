@@ -121,6 +121,7 @@ ISR(TIMER1_COMPA_vect){
 	// if data counter is less than 9 set the output compare to fire after 1 t_unit
 	// else Enable the Timer1 cap interrupt and process byte in buffer
 }
+// Tx Interrupt
 ISR(TIMER0_OVF_vect){
 	//compensate for the interrupt delay 0x03
 	TCNT0 = 0xFF - t_unit + 3 ;

@@ -46,7 +46,7 @@
 
 //Rx Buffer size in bytes
 #define RXBUFF_SIZE 20
-#define TX_BUFF_SIZE 80
+#define TX_BUFF_SIZE 120
 
 // new types
 typedef enum SWuart_Status_E{

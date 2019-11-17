@@ -30,7 +30,7 @@ int main(void)
 	UBLOX_Init();
 	SIM800L_Init();
 	OS_CreateNewTask(ubloxTask,5); // call ublox uart service every 500 us
-	OS_CreateNewTask(LEDTask,10000); // call led task every one second
+	OS_CreateNewTask(LEDTask,100000l); // call led task every ten seconds
 	OS_CreateNewTask(PrintDiag,10000); // call led task every one second
 	OS_CreateNewTask(OS_Cyclic5ms,50);
 
@@ -48,13 +48,18 @@ void ubloxTask(void){
 	UBLOX_cyclic();
 }
 void LEDTask(void){
-	LED_FLIP(LED1);
+	//static char t[]="Hello\n";
+	//SIM800L_SendUDP(t,(sizeof(t)/sizeof(t[0]))-1);
 }
 void PrintDiag(void){
 	GPS_data_t readData;
+	static char string[30];
+	uint8_t size;
+	LED_FLIP(LED1);
 	UBLOX_readGPSData(&readData);
 	ENABLE_SW_PRINTF();
-	printf("Time =  %dh,%dm,%ds \r\n",((readData.gps_hr+20)%24),readData.gps_min,readData.gps_sec);
+	size = sprintf(string,"Time =  %dh,%dm,%ds \r\n",((readData.gps_hr+19)%24),readData.gps_min,readData.gps_sec);
+	SIM800L_SendUDP(string,size);
 	printf("Location = %u %u.%lu %c , %u %u.%lu %c \r\n",readData.lat_deg,readData.lat_min,readData.lat_sec,readData.Lat_NS,\
 														readData.long_deg,readData.long_min,readData.long_sec,readData.Long_EW);
 	printf("Number of Sats = %u \r\n\r\n",readData.gps_numSats);

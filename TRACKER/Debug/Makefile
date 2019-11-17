@@ -33,20 +33,28 @@ LINKER_SCRIPT_DEP:=
 
 # Every subdirectory with source files must be described here
 SUBDIRS :=  \
+../lib/Buff_Cir \
+../lib/LEDs \
 ../MCAL \
+../MCAL/HWuart \
 ../MCAL/OS \
 ../MCAL/SWuart \
+../lib \
 ../Service \
+../Service/SIM800L \
 ../Service/OS \
 ../Service/UBLOX_6M
 
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
+../lib/Buff_Cir/Buff_Cir.c \
 ../main.c \
+../MCAL/HWuart/HWuart.c \
 ../MCAL/OS/OStimer.c \
 ../MCAL/SWuart/SWuart.c \
 ../Service/OS/OS.c \
+../Service/SIM800L/SIM800L.c \
 ../Service/UBLOX_6M/ublox_6m.c
 
 
@@ -57,31 +65,43 @@ ASM_SRCS +=
 
 
 OBJS +=  \
+lib/Buff_Cir/Buff_Cir.o \
 main.o \
+MCAL/HWuart/HWuart.o \
 MCAL/OS/OStimer.o \
 MCAL/SWuart/SWuart.o \
 Service/OS/OS.o \
+Service/SIM800L/SIM800L.o \
 Service/UBLOX_6M/ublox_6m.o
 
 OBJS_AS_ARGS +=  \
+lib/Buff_Cir/Buff_Cir.o \
 main.o \
+MCAL/HWuart/HWuart.o \
 MCAL/OS/OStimer.o \
 MCAL/SWuart/SWuart.o \
 Service/OS/OS.o \
+Service/SIM800L/SIM800L.o \
 Service/UBLOX_6M/ublox_6m.o
 
 C_DEPS +=  \
+lib/Buff_Cir/Buff_Cir.d \
 main.d \
+MCAL/HWuart/HWuart.d \
 MCAL/OS/OStimer.d \
 MCAL/SWuart/SWuart.d \
 Service/OS/OS.d \
+Service/SIM800L/SIM800L.d \
 Service/UBLOX_6M/ublox_6m.d
 
 C_DEPS_AS_ARGS +=  \
+lib/Buff_Cir/Buff_Cir.d \
 main.d \
+MCAL/HWuart/HWuart.d \
 MCAL/OS/OStimer.d \
 MCAL/SWuart/SWuart.d \
 Service/OS/OS.d \
+Service/SIM800L/SIM800L.d \
 Service/UBLOX_6M/ublox_6m.d
 
 OUTPUT_FILE_PATH +=TRACKER.elf
@@ -98,38 +118,59 @@ LINKER_SCRIPT_DEP+=
 
 
 # AVR32/GNU C Compiler
+lib/Buff_Cir/Buff_Cir.o: ../lib/Buff_Cir/Buff_Cir.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_HPRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS" -I"../MCAL/HWuart" -I"../lib/LEDs" -I"../Service/SIM800L"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
 ./main.o: .././main.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_PRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_HPRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS" -I"../MCAL/HWuart" -I"../lib/LEDs" -I"../Service/SIM800L"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+MCAL/HWuart/HWuart.o: ../MCAL/HWuart/HWuart.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_HPRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS" -I"../MCAL/HWuart" -I"../lib/LEDs" -I"../Service/SIM800L"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 	
 
 MCAL/OS/OStimer.o: ../MCAL/OS/OStimer.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_PRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_HPRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS" -I"../MCAL/HWuart" -I"../lib/LEDs" -I"../Service/SIM800L"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 	
 
 MCAL/SWuart/SWuart.o: ../MCAL/SWuart/SWuart.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_PRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_HPRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS" -I"../MCAL/HWuart" -I"../lib/LEDs" -I"../Service/SIM800L"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 	
 
 Service/OS/OS.o: ../Service/OS/OS.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_PRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_HPRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS" -I"../MCAL/HWuart" -I"../lib/LEDs" -I"../Service/SIM800L"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+Service/SIM800L/SIM800L.o: ../Service/SIM800L/SIM800L.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_HPRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS" -I"../MCAL/HWuart" -I"../lib/LEDs" -I"../Service/SIM800L"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 	
 
 Service/UBLOX_6M/ublox_6m.o: ../Service/UBLOX_6M/ublox_6m.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_PRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG -DF_CPU=12000000UL -DUSE_HPRINT_F  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include" -I"../MCAL/SWuart" -I"../Service/UBLOX_6M" -I"../Service/OS" -I"../MCAL/OS" -I"../MCAL/HWuart" -I"../lib/LEDs" -I"../Service/SIM800L"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32a -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega32a" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 	
 

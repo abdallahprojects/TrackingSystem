@@ -27,7 +27,7 @@ void Init_OS(void);
 typedef void(*taskPtr_t)(void);
 
 void OS_handlerCallBack(void);
-OS_State_t OS_CreateNewTask(taskPtr_t task, uint16_t TASK_TIME);
+OS_State_t OS_CreateNewTask(taskPtr_t task, uint32_t TASK_TIME);
 void OS_ServeOS(void);
 
 #endif /* OS_H_ */

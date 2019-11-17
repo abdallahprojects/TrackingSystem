@@ -14,8 +14,8 @@
 typedef struct task_s{
 	taskPtr_t taskPointer;
 	uint8_t task_id;
-	uint16_t task_time;
-	uint16_t task_counter;
+	uint32_t task_time;
+	uint32_t task_counter;
 	uint8_t state;
 }task_t;
 task_t tasks[TASK_MAX]; // Max 5 tasks in this mini OS
@@ -54,7 +54,7 @@ void OS_ServeOS(void)
 	}
 }
 // define the TASK_TIME is multiples of 100us
-OS_State_t OS_CreateNewTask(taskPtr_t task, uint16_t TASK_TIME)
+OS_State_t OS_CreateNewTask(taskPtr_t task, uint32_t TASK_TIME)
 {
 	OS_State_t ret;
 	static uint8_t task_indx;
